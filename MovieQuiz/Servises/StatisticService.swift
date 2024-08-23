@@ -10,6 +10,23 @@ import Foundation
         case date
     }
     
+     var totalCorrectAnswers: Int {
+         get {
+             storage.integer(forKey: "totalCorrectAnswers")
+         }
+         set {
+             storage.set(newValue, forKey: "totalCorrectAnswers")
+         }
+     }
+     
+     var totalQuestion: Int {
+         get {
+             storage.integer(forKey: "totalQuestion")
+         }
+         set {
+             storage.set(newValue, forKey: "totalQuestion")
+         }
+     }
      
     var gamesCount: Int {
         get {
@@ -36,34 +53,22 @@ import Foundation
     }
     
      var totalAccuracy: Double {
-         get {
-             storage.double(forKey: "totalAccuracy")
-         }
-         set { 
-             storage.set(newValue, forKey: "totalAccuracy")
-         }
+         guard totalQuestion != 0 else { return 0 }
+         return Double(totalCorrectAnswers) / Double(totalQuestion) * 100
      }
      
     func store(correct count: Int, total amount: Int) {
-        let previousCorrect = storage.integer(forKey: Keys.correct.rawValue)
-        let previousTotal = storage.integer(forKey: Keys.total.rawValue)
-        let previousGameCount = storage.integer(forKey: Keys.gamesCount.rawValue)
-        let newBestGame = GameResult(correct: count, total: amount, date: Date())
-        let correct = storage.integer(forKey: Keys.correct.rawValue)
-        let total = storage.integer(forKey: Keys.total.rawValue)
         
+        guard amount != 0 else { return }
         
-        if total != 0 {
-            totalAccuracy = (Double(correct) / Double(total)) * 100.0
-        }
-        else { totalAccuracy = 0 }
+        let gameResult = GameResult(correct: count, total: amount, date: Date())
         
-        storage.set(previousCorrect + count, forKey: Keys.correct.rawValue)
-        storage.set(previousTotal + amount, forKey: Keys.total.rawValue)
-        storage.set(previousGameCount + 1, forKey: Keys.gamesCount.rawValue)
+        gamesCount += 1
+        totalQuestion += amount
+        totalCorrectAnswers += count
         
-        if newBestGame.correct > bestGame.correct {
-            bestGame = newBestGame
+        if gameResult.isBetterThan(bestGame) {
+            bestGame = gameResult
         }
     }
 }

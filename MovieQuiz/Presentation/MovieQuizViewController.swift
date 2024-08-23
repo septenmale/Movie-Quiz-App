@@ -13,18 +13,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Private Properties
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
-    private let questionsAmount = 1
+    private let questionsAmount = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenter?
-    private var statisticService: StatisticServiceProtocol? = StatisticService()
+    private var statisticService: StatisticServiceProtocol = StatisticService()
     
     // MARK: - View Life Cycles
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        statisticService?.store(correct: correctAnswers, total: questionsAmount)
         let questionFactory = QuestionFactory()
         questionFactory.delegate = self
         self.questionFactory = questionFactory
@@ -98,11 +96,21 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         if currentQuestionIndex == questionsAmount - 1 {
             
             let title = "Этот раунд закончен!"
+            
+            statisticService.store(
+                correct: correctAnswers,
+                total: questionsAmount
+            )
+            
+            let gamesCount = statisticService.gamesCount
+            let bestGame = statisticService.bestGame
+            let totalAccuracy = statisticService.totalAccuracy
+            
             let message = """
 Ваш результат: \(correctAnswers)/\(questionsAmount)
-Количество сыгранных квизов: \(UserDefaults.standard.integer(forKey: "gamesCount"))
-Ваш рекорд: \(UserDefaults.standard.integer(forKey: "correct"))/10 \(Date().dateTimeString)
-Средняя точность: \(UserDefaults.standard.double(forKey: "totalAccuracy")) %
+Количество сыгранных квизов: \(gamesCount)
+Ваш рекорд: \(bestGame.correct)/\(bestGame.total) \(bestGame.date.dateTimeString)
+Средняя точность: \(String(format: "%.2f", totalAccuracy))%
 """
             let model = AlertModel(
                 title: title,
