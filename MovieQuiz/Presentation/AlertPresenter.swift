@@ -1,8 +1,21 @@
-//
-//  AlertPresenter.swift
-//  MovieQuiz
-//
-//  Created by Viktor on 17/08/2024.
-//
+import UIKit
 
-import Foundation
+final class AlertPresenter {
+    weak var vievController: UIViewController?
+    
+    init(vievController: UIViewController) {
+        self.vievController = vievController
+    }
+    
+    func showAlert (model: AlertModel) {
+        let alert = UIAlertController(
+            title: model.title,
+            message: model.message,
+            preferredStyle: .alert)
+        let action = UIAlertAction(title: model.buttonText, style: .default) {
+           _ in model.completion()
+        }
+        alert.addAction(action)
+        vievController?.present(alert, animated: true, completion: nil)
+    }
+}
