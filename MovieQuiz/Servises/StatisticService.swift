@@ -1,30 +1,35 @@
 import Foundation
 
- class StatisticService: StatisticServiceProtocol {
-    private let storage: UserDefaults = .standard
+ class StatisticServiceImplementation: StatisticService {
+     private let storage: UserDefaults = .standard
+     
      private enum Keys: String {
-        case correct
-        case bestGame
-        case gamesCount
-        case total
-        case date
-    }
-    
+         case totalCorrectAnswers
+         case totalQuestion
+         case gamesCount
+     }
+     
+     private enum bestGameKeys: String{
+         case correct
+         case total
+         case date
+     }
+     
      var totalCorrectAnswers: Int {
          get {
-             storage.integer(forKey: "totalCorrectAnswers")
+             storage.integer(forKey: Keys.totalCorrectAnswers.rawValue)
          }
          set {
-             storage.set(newValue, forKey: "totalCorrectAnswers")
+             storage.set(newValue, forKey: Keys.totalCorrectAnswers.rawValue)
          }
      }
      
      var totalQuestion: Int {
          get {
-             storage.integer(forKey: "totalQuestion")
+             storage.integer(forKey: Keys.totalQuestion.rawValue)
          }
          set {
-             storage.set(newValue, forKey: "totalQuestion")
+             storage.set(newValue, forKey: Keys.totalQuestion.rawValue)
          }
      }
      
@@ -39,16 +44,16 @@ import Foundation
     
     var bestGame: GameResult {
         get {
-            let correct = storage.integer(forKey: Keys.correct.rawValue)
-            let total = storage.integer(forKey: Keys.total.rawValue)
-            let date = storage.object(forKey: Keys.date.rawValue) as? Date ?? Date()
+            let correct = storage.integer(forKey: bestGameKeys.correct.rawValue)
+            let total = storage.integer(forKey: bestGameKeys.total.rawValue)
+            let date = storage.object(forKey: bestGameKeys.date.rawValue) as? Date ?? Date()
             
             return GameResult(correct: correct, total: total, date: date)
         }
         set {
-            storage.set(newValue.correct, forKey: Keys.correct.rawValue)
-            storage.set(newValue.total, forKey: Keys.total.rawValue)
-            storage.set(newValue.date, forKey: Keys.date.rawValue)
+            storage.set(newValue.correct, forKey: bestGameKeys.correct.rawValue)
+            storage.set(newValue.total, forKey: bestGameKeys.total.rawValue)
+            storage.set(newValue.date, forKey: bestGameKeys.date.rawValue)
         }
     }
     
@@ -59,13 +64,13 @@ import Foundation
      
     func store(correct count: Int, total amount: Int) {
         
-        guard amount != 0 else { return }
-        
-        let gameResult = GameResult(correct: count, total: amount, date: Date())
-        
         gamesCount += 1
         totalQuestion += amount
         totalCorrectAnswers += count
+        
+        guard amount != 0 else { return }
+        
+        let gameResult = GameResult(correct: count, total: amount, date: Date())
         
         if gameResult.isBetterThan(bestGame) {
             bestGame = gameResult
