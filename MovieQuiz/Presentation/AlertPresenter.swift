@@ -1,10 +1,10 @@
 import UIKit
 
 final class AlertPresenter {
-    weak var vievController: UIViewController?
+    weak var viewController: UIViewController?
     
-    init(vievController: UIViewController) {
-        self.vievController = vievController
+    init(viewController: UIViewController) {
+        self.viewController = viewController
     }
     
     func showAlert (model: AlertModel) {
@@ -16,6 +16,6 @@ final class AlertPresenter {
            _ in model.completion()
         }
         alert.addAction(action)
-        vievController?.present(alert, animated: true, completion: nil)
+        viewController?.present(alert, animated: true, completion: nil)
     }
 }

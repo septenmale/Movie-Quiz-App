@@ -14,22 +14,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     private let questionsAmount = 10
-    private var questionFactory: QuestionFactoryProtocol?
+    private var questionFactory: QuestionFactory?
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenter?
-    private var statisticService: StatisticServiceProtocol = StatisticService()
+    private var statisticService: StatisticService = StatisticServiceImplementation()
     
     // MARK: - View Life Cycles
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let questionFactory = QuestionFactory()
+        let questionFactory = QuestionFactoryImplementation()
         questionFactory.delegate = self
         self.questionFactory = questionFactory
         
         questionFactory.requestNextQuestion()
         
-        alertPresenter = AlertPresenter(vievController: self)
+        alertPresenter = AlertPresenter(viewController: self)
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -92,12 +92,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private func showNextQuestionOrResults() {
         changeButtonState(isEnabled: true)
         imageView.layer.borderWidth = 0
+        let isRoundEnd = currentQuestionIndex == questionsAmount - 1
         
-        if currentQuestionIndex == questionsAmount - 1 {
+        if isRoundEnd {
             
             let title = "Этот раунд закончен!"
             
-            statisticService.store(
+            statisticService.store (
                 correct: correctAnswers,
                 total: questionsAmount
             )
@@ -105,8 +106,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             let gamesCount = statisticService.gamesCount
             let bestGame = statisticService.bestGame
             let totalAccuracy = statisticService.totalAccuracy
-            
-            let message = """
+            let message =
+"""
 Ваш результат: \(correctAnswers)/\(questionsAmount)
 Количество сыгранных квизов: \(gamesCount)
 Ваш рекорд: \(bestGame.correct)/\(bestGame.total) \(bestGame.date.dateTimeString)
@@ -116,10 +117,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 title: title,
                 message: message,
                 buttonText: "Сыграть ещё раз",
-                completion: { [weak self]
-                    in
-                    guard let self = self else {
-                        return}
+                completion: { [weak self] in
+                    guard let self = self else { return }
                     self.currentQuestionIndex = 0
                     self.correctAnswers = 0
                     self.questionFactory?.requestNextQuestion()
