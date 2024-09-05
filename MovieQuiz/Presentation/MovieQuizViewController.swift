@@ -9,6 +9,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var noButton: UIButton!
     @IBOutlet private var yesButton: UIButton!
+    @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     
     // MARK: - Private Properties
     private var currentQuestionIndex = 0
@@ -22,12 +23,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - View Life Cycles
     override func viewDidLoad() {
         super.viewDidLoad()
+        imageView.layer.cornerRadius = 20
+        questionFactory = QuestionFactoryImplementation(moviesLoader: MoviesLoader(), delegate: self)
         
-        let questionFactory = QuestionFactoryImplementation()
-        questionFactory.delegate = self
-        self.questionFactory = questionFactory
-        
-        questionFactory.requestNextQuestion()
+        questionFactory?.loadData()
+        showLoadingIndicator()
         
         alertPresenter = AlertPresenter(viewController: self)
     }
@@ -63,7 +63,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Private Methods
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1) / \(questionsAmount)")
         return questionStep
@@ -128,7 +128,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             alertPresenter?.showAlert(model: model)
         } else {
             currentQuestionIndex += 1
-            questionFactory?.requestNextQuestion() 
+            questionFactory?.requestNextQuestion()
         }
     }
     
@@ -136,5 +136,40 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         noButton.isEnabled = isEnabled
         yesButton.isEnabled = isEnabled
     }
+    
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    // gather in one
+    private func setLoadingIndicator(visible: Bool) {
+        activityIndicator.isHidden = !visible
+        visible ? activityIndicator.startAnimating() : activityIndicator.stopAnimating()
+    }
+    
+    private func showNetworkError(message: String) {
+        setLoadingIndicator(visible: false)
+        let model = AlertModel(title: "Ошибка",
+                               message: "Произошла ошибка",
+                               buttonText: "Попробовать ещё раз",
+                               completion: { [weak self] in
+            guard let self = self else { return }
+            
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            self.questionFactory?.requestNextQuestion()
+        }
+        )
+        alertPresenter?.showAlert(model: model)
+    }
+    
+    func didLoadDataFromServer() {
+        setLoadingIndicator(visible: false)
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
 }
-
