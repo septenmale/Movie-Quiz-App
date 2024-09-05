@@ -27,7 +27,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         questionFactory = QuestionFactoryImplementation(moviesLoader: MoviesLoader(), delegate: self)
         
         questionFactory?.loadData()
-        showLoadingIndicator()
+        setLoadingIndicator(visible: true)
         
         alertPresenter = AlertPresenter(viewController: self)
     }
@@ -63,9 +63,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Private Methods
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         return QuizStepViewModel(
-                image: UIImage(data: model.image) ?? UIImage(),
-                question: model.text,
-                questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+            image: UIImage(data: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
     private func showAnswerResult(isCorrect: Bool) {
         changeButtonState(isEnabled: false)
@@ -128,6 +128,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         } else {
             currentQuestionIndex += 1
             questionFactory?.requestNextQuestion()
+            setLoadingIndicator(visible: false)
         }
     }
     
@@ -135,18 +136,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         noButton.isEnabled = isEnabled
         yesButton.isEnabled = isEnabled
     }
-    
-    private func showLoadingIndicator() {
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
-    }
-    // gather in one
+        
     private func setLoadingIndicator(visible: Bool) {
         activityIndicator.isHidden = !visible
         visible ? activityIndicator.startAnimating() : activityIndicator.stopAnimating()
     }
     
-    private func showNetworkError(message: String) {
+   private func showNetworkError(message: String) {
         setLoadingIndicator(visible: false)
         let model = AlertModel(title: "Ошибка",
                                message: "Произошла ошибка",
@@ -157,6 +153,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             self.questionFactory?.requestNextQuestion()
+            questionFactory?.loadData()
         }
         )
         alertPresenter?.showAlert(model: model)
@@ -169,6 +166,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     func didFailToLoadData(with error: Error) {
         showNetworkError(message: error.localizedDescription)
+        setLoadingIndicator(visible: true)
     }
     
 }
