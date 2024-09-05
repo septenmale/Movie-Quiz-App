@@ -2,18 +2,13 @@ import Foundation
 
 final class QuestionFactoryImplementation: QuestionFactory {
     private let moviesLoader: MoviesLoading
-    weak var delegate: QuestionFactoryDelegate?
+    private weak var delegate: QuestionFactoryDelegate?
     private var movies: [MostPopularMovie] = []
     
     init(moviesLoader: MoviesLoading, delegate: QuestionFactoryDelegate?) {
         self.moviesLoader = moviesLoader
         self.delegate = delegate
-        
-        
     }
-    
-    
-    
     
     //    private let questions: [QuizQuestion] = [
     //        QuizQuestion(
@@ -60,34 +55,34 @@ final class QuestionFactoryImplementation: QuestionFactory {
     
     func requestNextQuestion() {
         DispatchQueue.global().async { [weak self] in
-            guard let self = self else { return }
-            let index = (0..<self.movies.count).randomElement() ?? 0
-            let number = (0..<10).randomElement() ?? 0
-            
-            guard let movie = self.movies[safe: index] else { return }
-            
-            var imageData = Data()
-            
-            do {
-                imageData = try Data(contentsOf: movie.imageURL)
-            } catch {
-                print("Failed to load image")
-            }
-            
-            let rating = Float(movie.rating) ?? 0
-            
-            let text = "Рейтинг этого фильма больше чем \(number)?"
-            let correctAnswer = rating > Float(number) // если ошибка с рейтингом в вопросе то сдесь
-            
-            let question = QuizQuestion(image: imageData,
-                                        text: text,
-                                        correctAnswer: correctAnswer)
-            
-            DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
-                self.delegate?.didReceiveNextQuestion(question: question)
+                let index = (0..<self.movies.count).randomElement() ?? 0
+            let number = (0..<10).randomElement() ?? 0
+                
+                guard let movie = self.movies[safe: index] else { return }
+                
+                var imageData = Data()
+               
+               do {
+                    imageData = try Data(contentsOf: movie.resizedImageURL)
+                } catch {
+                    print("Failed to load image")
+                }
+                
+                let rating = Float(movie.rating) ?? 0
+                
+                let text = "Рейтинг этого фильма больше чем \(number)?"
+                let correctAnswer = rating > Float(number)
+                
+                let question = QuizQuestion(image: imageData,
+                                             text: text,
+                                             correctAnswer: correctAnswer)
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.delegate?.didReceiveNextQuestion(question: question)
+                }
             }
-        }
     }
     
     func loadData() {
@@ -104,6 +99,5 @@ final class QuestionFactoryImplementation: QuestionFactory {
             }
         }
     }
-    
     
 }
