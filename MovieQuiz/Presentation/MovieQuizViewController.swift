@@ -12,13 +12,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     
     // MARK: - Private Properties
-    private var currentQuestionIndex = 0
     private var correctAnswers = 0
-    private let questionsAmount = 10
     private var questionFactory: QuestionFactory?
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenter?
     private var statisticService: StatisticService = StatisticServiceImplementation()
+    private let presenter = MovieQuizPresenter()
     
     // MARK: - View Life Cycles
     override func viewDidLoad() {
@@ -38,7 +37,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             return
         }
         currentQuestion = question
-        let viewModel = convert(model: question)
+        let viewModel = presenter.convert(model: question)
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
@@ -61,12 +60,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     // MARK: - Private Methods
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        return QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-    }
     private func showAnswerResult(isCorrect: Bool) {
         changeButtonState(isEnabled: false)
         imageView.layer.masksToBounds = true
@@ -91,15 +84,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private func showNextQuestionOrResults() {
         changeButtonState(isEnabled: true)
         imageView.layer.borderWidth = 0
-        let isRoundEnd = currentQuestionIndex == questionsAmount - 1
         
-        if isRoundEnd {
+        if presenter.isLastQuestion() {
             
             let title = "Этот раунд закончен!"
             
             statisticService.store (
                 correct: correctAnswers,
-                total: questionsAmount
+                total: presenter.questionsAmount
             )
             
             let gamesCount = statisticService.gamesCount
@@ -107,7 +99,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             let totalAccuracy = statisticService.totalAccuracy
             let message =
 """
-Ваш результат: \(correctAnswers)/\(questionsAmount)
+Ваш результат: \(correctAnswers)/\(presenter.questionsAmount)
 Количество сыгранных квизов: \(gamesCount)
 Ваш рекорд: \(bestGame.correct)/\(bestGame.total) \(bestGame.date.dateTimeString)
 Средняя точность: \(String(format: "%.2f", totalAccuracy))%
@@ -118,7 +110,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 buttonText: "Сыграть ещё раз",
                 completion: { [weak self] in
                     guard let self = self else { return }
-                    self.currentQuestionIndex = 0
+                    presenter.resetQuestionIndex()
                     self.correctAnswers = 0
                     self.questionFactory?.requestNextQuestion()
                 }
@@ -126,7 +118,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             
             alertPresenter?.showAlert(model: model)
         } else {
-            currentQuestionIndex += 1
+            presenter.switchToNextQuestion()
             questionFactory?.requestNextQuestion()
             setLoadingIndicator(visible: false)
         }
@@ -150,7 +142,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                                completion: { [weak self] in
             guard let self = self else { return }
             
-            self.currentQuestionIndex = 0
+            presenter.resetQuestionIndex()
             self.correctAnswers = 0
             self.questionFactory?.requestNextQuestion()
             questionFactory?.loadData()
