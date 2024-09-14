@@ -22,6 +22,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - View Life Cycles
     override func viewDidLoad() {
         super.viewDidLoad()
+        presenter.viewController = self
         imageView.layer.cornerRadius = 20
         questionFactory = QuestionFactoryImplementation(moviesLoader: MoviesLoader(), delegate: self)
         
@@ -45,22 +46,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - IB Actions
     @IBAction private func noButtonClicked(_ sender: Any) {
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        let givenAnswer = false
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        presenter.noButtonClicked()
+        presenter.currentQuestion = currentQuestion
     }
+    
     @IBAction private func yesButtonClicked(_ sender: Any) {
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        let givenAnswer = true
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        presenter.yesButtonClicked()
+        presenter.currentQuestion = currentQuestion
     }
     
     // MARK: - Private Methods
-    private func showAnswerResult(isCorrect: Bool) {
+    func showAnswerResult(isCorrect: Bool) {
         changeButtonState(isEnabled: false)
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 8
