@@ -7,7 +7,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     var correctAnswers: Int = 0
     var currentQuestion: QuizQuestion?
     var statisticService: StatisticService = StatisticServiceImplementation()
-    var alertPresenter: AlertPresenter?
+    var alertPresenter: AlertPresenter? 
     private weak var viewController: MovieQuizViewController?
     var questionFactory: QuestionFactory?
     
@@ -16,6 +16,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         questionFactory = QuestionFactoryImplementation(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory?.loadData()
+        alertPresenter = AlertPresenter(viewController: viewController)
         viewController.setLoadingIndicator(visible: true)
     }
     
