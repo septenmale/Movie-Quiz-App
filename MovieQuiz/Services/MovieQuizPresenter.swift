@@ -19,6 +19,11 @@ final class MovieQuizPresenter {
         viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
+    func didAnswerCorrectly(isCorrectAnswer: Bool) {
+        if isCorrectAnswer == true {
+            correctAnswers += 1 }
+    }
+    
     func yesButtonClicked() {
         didAnswer(isYes: true)
     }
@@ -31,8 +36,9 @@ final class MovieQuizPresenter {
         currentQuestionIndex == questionsAmount - 1
     }
     
-    func resetQuestionIndex() {
+    func restartGame() {
         currentQuestionIndex = 0
+        correctAnswers = 0
     }
     
     func switchToNextQuestion() {
@@ -64,7 +70,7 @@ final class MovieQuizPresenter {
             let title = "Этот раунд закончен!"
             
             statisticService.store (
-                correct: correctAnswers,
+                correct: self.correctAnswers,
                 total: self.questionsAmount
             )
             
@@ -73,7 +79,7 @@ final class MovieQuizPresenter {
             let totalAccuracy = statisticService.totalAccuracy
             let message =
 """
-Ваш результат: \(correctAnswers)/\(self.questionsAmount)
+Ваш результат: \(self.correctAnswers)/\(self.questionsAmount)
 Количество сыгранных квизов: \(gamesCount)
 Ваш рекорд: \(bestGame.correct)/\(bestGame.total) \(bestGame.date.dateTimeString)
 Средняя точность: \(String(format: "%.2f", totalAccuracy))%
@@ -84,8 +90,7 @@ final class MovieQuizPresenter {
                 buttonText: "Сыграть ещё раз",
                 completion: { [weak self] in
                     guard let self = self else { return }
-                    self.resetQuestionIndex()
-                    self.correctAnswers = 0
+                    self.restartGame()
                     self.questionFactory?.requestNextQuestion()
                     viewController?.setLoadingIndicator(visible: false)
                 }
