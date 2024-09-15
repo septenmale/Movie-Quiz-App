@@ -1,15 +1,45 @@
 import Foundation
 import UIKit
 
-final class MovieQuizPresenter {
+final class MovieQuizPresenter: QuestionFactoryDelegate {
     let questionsAmount: Int = 10
     private var currentQuestionIndex: Int = 0
     var correctAnswers: Int = 0
     var currentQuestion: QuizQuestion?
-    weak var viewController: MovieQuizViewController?
-    var questionFactory: QuestionFactory?
     var statisticService: StatisticService = StatisticServiceImplementation()
     var alertPresenter: AlertPresenter?
+    private weak var viewController: MovieQuizViewController?
+    var questionFactory: QuestionFactory?
+    
+    init(viewController: MovieQuizViewController) {
+        self.viewController = viewController
+        
+        questionFactory = QuestionFactoryImplementation(moviesLoader: MoviesLoader(), delegate: self)
+        questionFactory?.loadData()
+        viewController.setLoadingIndicator(visible: true)
+    }
+    
+    // MARK: - QuestionFactoryDelegate
+    func didLoadDataFromServer() {
+        viewController?.setLoadingIndicator(visible: false)
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        let message = error.localizedDescription
+        viewController?.showNetworkError(message: message)
+    }
+    
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else {
+            return
+        }
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.viewController?.show(quiz: viewModel)
+        }
+    }
     
     private func didAnswer(isYes: Bool) {
         guard let currentQuestion = currentQuestion else {
@@ -39,6 +69,7 @@ final class MovieQuizPresenter {
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0
+        questionFactory?.requestNextQuestion()
     }
     
     func switchToNextQuestion() {
@@ -52,19 +83,10 @@ final class MovieQuizPresenter {
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
     
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        guard let question = question else {
-            return
-        }
-        currentQuestion = question
-        let viewModel = convert(model: question)
-        DispatchQueue.main.async { [weak self] in
-            self?.viewController?.show(quiz: viewModel)
-        }
-    }
-    
-    private func showNextQuestionOrResults() {
+    func showNextQuestionOrResults() {
+        self.viewController?.hideLayerBorders()
         viewController?.changeButtonState(isEnabled: true)
+        
         if self.isLastQuestion() {
             
             let title = "Этот раунд закончен!"
@@ -100,6 +122,8 @@ final class MovieQuizPresenter {
         } else {
             self.switchToNextQuestion()
             questionFactory?.requestNextQuestion()
+            print(currentQuestionIndex)
+        
         }
     }
     
