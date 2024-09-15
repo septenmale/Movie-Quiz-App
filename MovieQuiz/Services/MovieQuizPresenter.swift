@@ -4,23 +4,27 @@ import UIKit
 final class MovieQuizPresenter {
     let questionsAmount: Int = 10
     private var currentQuestionIndex: Int = 0
+    var correctAnswers: Int = 0
     var currentQuestion: QuizQuestion?
     weak var viewController: MovieQuizViewController?
+    var questionFactory: QuestionFactory?
+    var statisticService: StatisticService = StatisticServiceImplementation()
+    var alertPresenter: AlertPresenter?
     
-    func yesButtonClicked() {
+    private func didAnswer(isYes: Bool) {
         guard let currentQuestion = currentQuestion else {
             return
         }
-        let givenAnswer = true
+        let givenAnswer = isYes
         viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
+    func yesButtonClicked() {
+        didAnswer(isYes: true)
+    }
+    
     func noButtonClicked() {
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        let givenAnswer = false
-        viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        didAnswer(isYes: false)
     }
     
     func isLastQuestion() -> Bool {
@@ -41,4 +45,57 @@ final class MovieQuizPresenter {
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
+    
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else {
+            return
+        }
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.viewController?.show(quiz: viewModel)
+        }
+    }
+    
+    private func showNextQuestionOrResults() {
+        viewController?.changeButtonState(isEnabled: true)
+        if self.isLastQuestion() {
+            
+            let title = "Этот раунд закончен!"
+            
+            statisticService.store (
+                correct: correctAnswers,
+                total: self.questionsAmount
+            )
+            
+            let gamesCount = statisticService.gamesCount
+            let bestGame = statisticService.bestGame
+            let totalAccuracy = statisticService.totalAccuracy
+            let message =
+"""
+Ваш результат: \(correctAnswers)/\(self.questionsAmount)
+Количество сыгранных квизов: \(gamesCount)
+Ваш рекорд: \(bestGame.correct)/\(bestGame.total) \(bestGame.date.dateTimeString)
+Средняя точность: \(String(format: "%.2f", totalAccuracy))%
+"""
+            let model = AlertModel(
+                title: title,
+                message: message,
+                buttonText: "Сыграть ещё раз",
+                completion: { [weak self] in
+                    guard let self = self else { return }
+                    self.resetQuestionIndex()
+                    self.correctAnswers = 0
+                    self.questionFactory?.requestNextQuestion()
+                    viewController?.setLoadingIndicator(visible: false)
+                }
+            )
+            
+            alertPresenter?.showAlert(model: model)
+        } else {
+            self.switchToNextQuestion()
+            questionFactory?.requestNextQuestion()
+        }
+    }
+    
 }

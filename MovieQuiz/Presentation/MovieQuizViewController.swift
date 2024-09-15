@@ -14,7 +14,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Private Properties
     private var correctAnswers = 0
     private var questionFactory: QuestionFactory?
-    private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenter?
     private var statisticService: StatisticService = StatisticServiceImplementation()
     private let presenter = MovieQuizPresenter()
@@ -34,25 +33,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - QuestionFactoryDelegate
     func didReceiveNextQuestion(question: QuizQuestion?) {
-        guard let question = question else {
-            return
-        }
-        currentQuestion = question
-        let viewModel = presenter.convert(model: question)
-        DispatchQueue.main.async { [weak self] in
-            self?.show(quiz: viewModel)
-        }
+        presenter.didReceiveNextQuestion(question: question)
     }
     
     // MARK: - IB Actions
     @IBAction private func noButtonClicked(_ sender: Any) {
         presenter.noButtonClicked()
-        presenter.currentQuestion = currentQuestion
     }
     
     @IBAction private func yesButtonClicked(_ sender: Any) {
         presenter.yesButtonClicked()
-        presenter.currentQuestion = currentQuestion
     }
     
     // MARK: - Private Methods
@@ -71,15 +61,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             self.showNextQuestionOrResults()
         }
     }
-    private func show(quiz step: QuizStepViewModel) {
+    func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image
         textLabel.text = step.question
         counterLabel.text = step.questionNumber
     }
     
     private func showNextQuestionOrResults() {
-        changeButtonState(isEnabled: true)
-        imageView.layer.borderWidth = 0
+        changeButtonState(isEnabled: true) //
+        imageView.layer.borderWidth = 0    // only here 
         
         if presenter.isLastQuestion() {
             
@@ -116,16 +106,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         } else {
             presenter.switchToNextQuestion()
             questionFactory?.requestNextQuestion()
-            setLoadingIndicator(visible: false)
+            setLoadingIndicator(visible: false) // doest not present in presenter
         }
     }
     
-    private func changeButtonState(isEnabled: Bool) {
+    func changeButtonState(isEnabled: Bool) {
         noButton.isEnabled = isEnabled
         yesButton.isEnabled = isEnabled
     }
         
-    private func setLoadingIndicator(visible: Bool) {
+    func setLoadingIndicator(visible: Bool) {
         activityIndicator.isHidden = !visible
         visible ? activityIndicator.startAnimating() : activityIndicator.stopAnimating()
     }
