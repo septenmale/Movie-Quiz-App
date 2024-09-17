@@ -13,13 +13,12 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var currentQuestionIndex: Int = 0
     private let statisticService: StatisticService!
     private weak var viewController: MovieQuizViewControllerProtocol?
-    //private weak var viewController: MovieQuizViewController?
     
     // MARK: - Initializers
     init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
         
-        statisticService = StatisticServiceImplementation() // recently added
+        statisticService = StatisticServiceImplementation() 
         
         questionFactory = QuestionFactoryImplementation(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory?.loadData()
