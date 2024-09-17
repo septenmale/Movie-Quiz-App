@@ -35,12 +35,10 @@ final class MovieQuizViewController: UIViewController {
     }
     
     // MARK: - Public Methods
-   
-    
     func hideLayerBorders() {
         imageView.layer.borderWidth = 0
     }
-
+    
     func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image
         textLabel.text = step.question
@@ -58,13 +56,13 @@ final class MovieQuizViewController: UIViewController {
         noButton.isEnabled = isEnabled
         yesButton.isEnabled = isEnabled
     }
-        
+    
     func setLoadingIndicator(visible: Bool) {
         activityIndicator.isHidden = !visible
         visible ? activityIndicator.startAnimating() : activityIndicator.stopAnimating()
     }
     
-   func showNetworkError(message: String) {
+    func showNetworkError(message: String) {
         setLoadingIndicator(visible: false)
         let model = AlertModel(title: "Ошибка",
                                message: "Произошла ошибка",
