@@ -13,7 +13,6 @@ final class MovieQuizViewController: UIViewController {
     
     // MARK: - Private Properties
     private var alertPresenter: AlertPresenter?
-//    private var statisticService: StatisticService = StatisticServiceImplementation() // wtage 8 
     private var presenter: MovieQuizPresenter!
     
     // MARK: - View Life Cycles
@@ -24,10 +23,6 @@ final class MovieQuizViewController: UIViewController {
         setLoadingIndicator(visible: true)
         
         imageView.layer.cornerRadius = 20
-        
-//        questionFactory = QuestionFactoryImplementation(moviesLoader: MoviesLoader(), delegate: self)
-//        questionFactory?.loadData()
-        
     }
     
     // MARK: - IB Actions
@@ -39,23 +34,8 @@ final class MovieQuizViewController: UIViewController {
         presenter.yesButtonClicked()
     }
     
-    // MARK: - Private Methods
-    func showAnswerResult(isCorrect: Bool) {
-        changeButtonState(isEnabled: false)
-        imageView.layer.masksToBounds = true
-        imageView.layer.borderWidth = 8
-        imageView.layer.cornerRadius = 20
-        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-//        if (isCorrect) == true {
-//            correctAnswers += 1
-//        }
-        presenter.didAnswerCorrectly(isCorrectAnswer: isCorrect)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [ weak self ] in
-            guard let self = self else { return }
-            self.presenter.showNextQuestionOrResults()
-        }
-    }
+    // MARK: - Public Methods
+   
     
     func hideLayerBorders() {
         imageView.layer.borderWidth = 0
@@ -67,9 +47,11 @@ final class MovieQuizViewController: UIViewController {
         counterLabel.text = step.questionNumber
     }
     
-    private func showNextQuestionOrResults() {
-        self.presenter.showNextQuestionOrResults()
-        
+    func hightLightImageBorder(isCorrectAnswerReceived: Bool) {
+        imageView.layer.masksToBounds = true
+        imageView.layer.borderWidth = 8
+        imageView.layer.cornerRadius = 20
+        imageView.layer.borderColor = isCorrectAnswerReceived ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
     }
     
     func changeButtonState(isEnabled: Bool) {
@@ -96,18 +78,5 @@ final class MovieQuizViewController: UIViewController {
         )
         alertPresenter?.showAlert(model: model)
     }
-    
-//    func didLoadDataFromServer() {
-//        setLoadingIndicator(visible: false)
-//        questionFactory?.requestNextQuestion()
-//    }
-    
-//    func didFailToLoadData(with error: Error) {
-//        showNetworkError(message: error.localizedDescription)
-//        setLoadingIndicator(visible: true)
-//    }
-    //    func didReceiveNextQuestion(question: QuizQuestion?) {
-    //        presenter.didReceiveNextQuestion(question: question)
-    //    }
     
 }

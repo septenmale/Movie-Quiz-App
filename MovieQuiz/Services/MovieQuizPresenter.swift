@@ -2,15 +2,15 @@ import Foundation
 import UIKit
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
+    // MARK: - Public Properties
     let questionsAmount: Int = 10
-    private var currentQuestionIndex: Int = 0
     var correctAnswers: Int = 0
     var currentQuestion: QuizQuestion?
-    private let statisticService: StatisticService! // recntly changed
     var alertPresenter: AlertPresenter?
-    private weak var viewController: MovieQuizViewController?
     var questionFactory: QuestionFactory?
-    
+    private var currentQuestionIndex: Int = 0
+    private let statisticService: StatisticService!
+    private weak var viewController: MovieQuizViewController?
     init(viewController: MovieQuizViewController) {
         self.viewController = viewController
         
@@ -49,7 +49,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             return
         }
         let givenAnswer = isYes
-        viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        self.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
     func didAnswerCorrectly(isCorrectAnswer: Bool) {
@@ -84,6 +84,21 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+    }
+    
+    func showAnswerResult(isCorrect: Bool) {
+        viewController?.changeButtonState(isEnabled: false)
+        didAnswerCorrectly(isCorrectAnswer: isCorrect)
+        viewController?.hightLightImageBorder(isCorrectAnswerReceived: isCorrect)
+//        if (isCorrect) == true {
+//            correctAnswers += 1
+//        }
+    
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [ weak self ] in
+            guard let self = self else { return }
+            self.showNextQuestionOrResults()
+        }
     }
     
     func showNextQuestionOrResults() {
