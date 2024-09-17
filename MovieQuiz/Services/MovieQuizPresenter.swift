@@ -6,13 +6,15 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var currentQuestionIndex: Int = 0
     var correctAnswers: Int = 0
     var currentQuestion: QuizQuestion?
-    var statisticService: StatisticService = StatisticServiceImplementation()
-    var alertPresenter: AlertPresenter? 
+    private let statisticService: StatisticService! // recntly changed
+    var alertPresenter: AlertPresenter?
     private weak var viewController: MovieQuizViewController?
     var questionFactory: QuestionFactory?
     
     init(viewController: MovieQuizViewController) {
         self.viewController = viewController
+        
+        statisticService = StatisticServiceImplementation() // recently added
         
         questionFactory = QuestionFactoryImplementation(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory?.loadData()

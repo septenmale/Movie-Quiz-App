@@ -13,7 +13,7 @@ final class MovieQuizViewController: UIViewController {
     
     // MARK: - Private Properties
     private var alertPresenter: AlertPresenter?
-    private var statisticService: StatisticService = StatisticServiceImplementation()
+//    private var statisticService: StatisticService = StatisticServiceImplementation() // wtage 8 
     private var presenter: MovieQuizPresenter!
     
     // MARK: - View Life Cycles
