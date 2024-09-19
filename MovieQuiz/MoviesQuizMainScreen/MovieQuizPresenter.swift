@@ -23,7 +23,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         questionFactory = QuestionFactoryImplementation(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory?.loadData()
         alertPresenter = AlertPresenter(viewController: viewController)
-        viewController.setLoadingIndicator(visible: true)
     }
     
     // MARK: - Public Methods
@@ -96,16 +95,16 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     private func showNextQuestionOrResults() {
-        self.viewController?.hideLayerBorders()
+        viewController?.hideLayerBorders()
         viewController?.changeButtonState(isEnabled: true)
         
-        if self.isLastQuestion() {
+        if isLastQuestion() {
             
             let title = "Этот раунд закончен!"
             
             statisticService.store (
-                correct: self.correctAnswers,
-                total: self.questionsAmount
+                correct: correctAnswers,
+                total: questionsAmount
             )
             
             let gamesCount = statisticService.gamesCount
@@ -113,7 +112,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             let totalAccuracy = statisticService.totalAccuracy
             let message =
 """
-Ваш результат: \(self.correctAnswers)/\(self.questionsAmount)
+Ваш результат: \(correctAnswers)/\(questionsAmount)
 Количество сыгранных квизов: \(gamesCount)
 Ваш рекорд: \(bestGame.correct)/\(bestGame.total) \(bestGame.date.dateTimeString)
 Средняя точность: \(String(format: "%.2f", totalAccuracy))%
@@ -132,7 +131,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             
             alertPresenter?.showAlert(model: model)
         } else {
-            self.switchToNextQuestion()
+            switchToNextQuestion()
             questionFactory?.requestNextQuestion()
         }
     }
@@ -142,7 +141,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             return
         }
         let givenAnswer = isYes
-        self.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
 }

@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+
 protocol MovieQuizViewControllerProtocol: UIViewController {
     func show(quiz step: QuizStepViewModel)
     func hightLightImageBorder(isCorrectAnswerReceived: Bool)

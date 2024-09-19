@@ -18,6 +18,8 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     // MARK: - View Life Cycles
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
         presenter = MovieQuizPresenter(viewController: self)
         alertPresenter = AlertPresenter(viewController: self)
         setLoadingIndicator(visible: true)
