@@ -100,7 +100,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         if isLastQuestion() {
             
-            let title = "Этот раунд закончен!"
+            let title = "This round is over"
             
             statisticService.store (
                 correct: correctAnswers,
@@ -112,15 +112,15 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             let totalAccuracy = statisticService.totalAccuracy
             let message =
 """
-Ваш результат: \(correctAnswers)/\(questionsAmount)
-Количество сыгранных квизов: \(gamesCount)
-Ваш рекорд: \(bestGame.correct)/\(bestGame.total) \(bestGame.date.dateTimeString)
-Средняя точность: \(String(format: "%.2f", totalAccuracy))%
+Your result: \(correctAnswers)/\(questionsAmount)
+Number of quizzes played: \(gamesCount)
+Your record: \(bestGame.correct)/\(bestGame.total) \(bestGame.date.dateTimeString)
+Average accuracy: \(String(format: "%.2f", totalAccuracy))%
 """
             let model = AlertModel(
                 title: title,
                 message: message,
-                buttonText: "Сыграть ещё раз",
+                buttonText: "Play again",
                 completion: { [weak self] in
                     guard let self = self else { return }
                     self.restartGame()
