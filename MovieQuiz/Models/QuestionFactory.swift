@@ -15,6 +15,8 @@ final class QuestionFactoryImplementation: QuestionFactory {
             guard let self = self else { return }
             let index = (0..<self.movies.count).randomElement() ?? 0
             let number = (0..<10).randomElement() ?? 0
+            let adjectives: [String] = ["above", "below"]
+            let randomAdjective = adjectives.randomElement() ?? "above"
             
             guard let movie = self.movies[safe: index] else { return }
             
@@ -28,7 +30,7 @@ final class QuestionFactoryImplementation: QuestionFactory {
             
             let rating = Float(movie.rating) ?? 0
             
-            let text = "Is this movie rated above \(number)?"
+            let text = "Is this movie rated \(randomAdjective) \(number)?"
             let correctAnswer = rating > Float(number)
             
             let question = QuizQuestion(image: imageData,
